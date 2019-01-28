@@ -14,3 +14,13 @@
 ion-content {
     --background: var(--ion-background-color, transparent);
 }
+
+[no-scroll] {
+    .scroll-content {
+        overflow: hidden;
+    }  
+    ::-webkit-scrollbar,
+    *::-webkit-scrollbar {
+        display: none;
+    }
+}
