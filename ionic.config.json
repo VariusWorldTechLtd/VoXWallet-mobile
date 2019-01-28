@@ -1,0 +1,7 @@
+{
+  "name": "mob",
+  "integrations": {
+    "cordova": {}
+  },
+  "type": "angular"
+}
