@@ -3,7 +3,7 @@
     <name>VoX Wallet</name>
     <description>Gambling Wallet.</description>
     <author email="tech@variusworldtech.com" href="http://variusworldtech.com/">Varius World Tech Team</author>
-    <content original-src="index.html" src="http://192.168.56.1:80" />
+    <content src="index.html" />
     <access origin="*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />

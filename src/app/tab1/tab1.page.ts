@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import { Router } from '@angular/router';
+// import { ModalController } from '@ionic/angular';
 
 import { QRPage } from '../qr/qr.page';
 
@@ -10,11 +11,14 @@ import { QRPage } from '../qr/qr.page';
 })
 export class Tab1Page {
 
-  constructor(public modalController: ModalController) {
+  // public modalController: ModalController
+  constructor(private router: Router) {
   }
 
-  async onQR() {
-    const modal = await this.modalController.create({ component: QRPage });
-    return await modal.present();
+  // async
+  onQR() {
+    // const modal = await this.modalController.create({ component: QRPage });
+    // return await modal.present();
+    this.router.navigate(['/qr']);
   }
 }

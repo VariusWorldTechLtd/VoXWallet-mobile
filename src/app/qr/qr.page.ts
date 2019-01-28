@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+// import { ModalController } from '@ionic/angular';
 
 import { QRScanner, QRScannerStatus } from '@ionic-native/qr-scanner/ngx';
 
@@ -10,15 +10,16 @@ import { QRScanner, QRScannerStatus } from '@ionic-native/qr-scanner/ngx';
 })
 export class QRPage implements OnInit {
 
-  constructor(private modalController: ModalController, private qrScanner: QRScanner) { }
+  // (private modalController: ModalController,
+  constructor(private qrScanner: QRScanner) { }
 
   ngOnInit() {
     this.onScan();
   }
 
-  onClose(data: any = null) {
-    this.modalController.dismiss(data);
-  }
+  // onClose(data: any = null) {
+  //   this.modalController.dismiss(data);
+  // }
 
   onScan() {
     this.qrScanner.prepare().then((status: QRScannerStatus) => {
@@ -32,8 +33,8 @@ export class QRPage implements OnInit {
           console.log('Scanned something', text);
           this.qrScanner.hide(); // hide camera preview
           // window.document.querySelector('app-root > ion-app').classList.remove('hide');
-
           scanSub.unsubscribe(); // stop scanning
+          this.qrScanner.destroy();
         });
       } else if (status.denied) {
         // camera permission was permanently denied
