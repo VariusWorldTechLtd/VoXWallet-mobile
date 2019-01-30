@@ -5,11 +5,11 @@ import { Router } from '@angular/router';
 import { QRPage } from '../qr/qr.page';
 
 @Component({
-  selector: 'app-tab1',
-  templateUrl: 'tab1.page.html',
-  styleUrls: ['tab1.page.scss']
+  selector: 'app-activity',
+  templateUrl: 'activity.page.html',
+  styleUrls: ['activity.page.scss']
 })
-export class Tab1Page {
+export class ActivityPage {
 
   // public modalController: ModalController
   constructor(private router: Router) {

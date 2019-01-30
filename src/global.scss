@@ -11,8 +11,29 @@
 @import '~@ionic/angular/css/flex-utils.css';
 
 
+@font-face {
+    font-family: 'poppins';
+    src: url('/assets/fonts/poppins.woff2') format('woff2'),
+         url('/assets/fonts/poppins.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+ion-card, .card-md, .card-ios {
+    box-shadow: none !important;
+    // border: 1px solid #d8d8d8;
+}
+
 ion-content {
     --background: var(--ion-background-color, transparent);
+}
+
+pre {
+    white-space: pre-wrap;       /* css-3 */
+    white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+    white-space: -pre-wrap;      /* Opera 4-6 */
+    white-space: -o-pre-wrap;    /* Opera 7 */
+    word-wrap: break-word;       /* Internet Explorer 5.5+ */
 }
 
 [no-scroll] {
@@ -23,4 +44,13 @@ ion-content {
     *::-webkit-scrollbar {
         display: none;
     }
+}
+
+.title-icon {
+    position: relative;
+    width: 100%;
+    left: 0;
+    bottom: 0;
+    text-align:center;
+    margin-top: 10px;
 }
