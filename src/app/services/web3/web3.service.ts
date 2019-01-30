@@ -1,4 +1,6 @@
 import { Injectable, Inject } from '@angular/core';
+import { Storage } from '@ionic/storage';
+
 // Web3
 import { WEB3 } from './web3.inject';
 import Web3 from 'web3';
@@ -14,7 +16,7 @@ const contractAddress = '';
 import { Observable, Subject, pipe, bindNodeCallback, of } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
 
-const ethereum = (<any>window).ethereum;
+import * as moment from 'moment';
 
 const STATE_LOADED = 'LOADED';
 const STATE_CONNECTED = 'CONNECTED';
@@ -41,13 +43,12 @@ export class Web3Service {
     private accounts: any[] = [];
     public accountsObservable = new Subject<any>();
 
-    // Socket
-    socketProvider = null;
-
     // Contract
     contract: any = null;
 
-    constructor(@Inject(WEB3) public web3: Web3) {
+    constructor(@Inject(WEB3) public web3: Web3,
+        private storage: Storage) {
+
         console.log(`web3: ${web3}`);
 
         this.accounts[0] = web3.eth.accounts.create('V&6f94&z741v8T9PB9!45]oF62N91T7M');
@@ -63,16 +64,6 @@ export class Web3Service {
             // , { from: this.defaultAccount, gasPrice: '0', gas: 0 }
             this.contract = new this.web3.eth.Contract(contractAbi, contractAddress);
             console.log(`Ethereum - contract: ${this.contract}`);
-
-            // Socket
-            this.socketProvider = new Web3.providers.WebsocketProvider('ws://ethtn3owi-dns-reg1-0.eastus.cloudapp.azure.com:8547');
-            this.socketProvider.on('connect', () => console.log('WS Connected'));
-            this.socketProvider.on('error', e => console.error('WS Error', e));
-            this.socketProvider.on('end', e => console.error('WS End', e));
-
-            // Provider
-            console.log(`Ethereum - contract: setProvider`);
-            this.contract.setProvider(this.socketProvider);
         }
     }
 
@@ -85,19 +76,9 @@ export class Web3Service {
         this.web3.eth.defaultAccount = account;
     }
 
-    // MetaMask - new settings
-    private async enableEthereum() {
-        if (ethereum) {
-            const res = await ethereum.enable();
-            return res;
-        }
-        return false;
-    }
-
-    // Enable Metamask
+    // Watch web3
     public async watchEthereum() {
         console.log(`Ethereum - watchEthereum`);
-        await this.enableEthereum();
         this.state = this.web3.currentProvider && !this.web3.currentProvider['Error'] ? STATE_LOADED : STATE_ERROR;
         console.log(`Ethereum - state: ${this.state}`);
         if (this.state === STATE_LOADED) {
@@ -105,7 +86,7 @@ export class Web3Service {
             console.log(`Ethereum - getNet`);
             const id = await this.web3.eth.net.getId();
             console.log(`Ethereum - id: ${id}`);
-            if (id && id === 118111120) {
+            if (id && id === 4) {
                 // Contract
                 this.contract = new this.web3.eth.Contract(contractAbi, contractAddress);
                 console.log(`Ethereum - contract: ${this.contract}`);
@@ -113,7 +94,7 @@ export class Web3Service {
                 console.log('Watching accounts...');
                 setInterval(() => this.refreshAccounts(), 1000);
             } else {
-                this.state = 'SWITCH TO VOXNET';
+                this.state = 'SWITCH TO RINKEBY';
             }
         } else {
             this.accountsObservable.next(this.state);
@@ -165,46 +146,50 @@ export class Web3Service {
         }
     }
 
-    // private async signTransaction(data: any) {
-    //     const nonce = await this.web3.eth.getTransactionCount(this.defaultAccount);
-    //     // this.web3.utils.toHex(nonce)
-    //     const rawTx = {
-    //         nonce: nonce || this.web3.utils.toHex(0),
-    //         gasPrice: '0x00',
-    //         gasLimit: '0x2FAF080',
-    //         to: contractAddress,
-    //         value: '0x00',
-    //         data: data
-    //     };
-    //     const tx = new ethereumjs(rawTx);
-    //     tx.sign(Buffer.from(this.accounts[0].privateKey.replace('0x', ''), 'hex'));
+    private async saveSession(address: string) {
+        if (address) {
+            let sessions: Array<any> = await this.storage.get('sessions');
+            if (!sessions) {
+                sessions = [];
+            }
+            sessions.push({ address: address, timestamp: moment().format('x') });
+            this.storage.set('sessions', sessions);
+            console.log('saveSession - after', JSON.stringify(sessions));
+        }
+    }
 
-    //     const raw = '0x' + tx.serialize().toString('hex');
-    //     const transactionHash = await this.web3.eth.sendSignedTransaction(raw);
-    //     return transactionHash;
-    // }
+    public async login(address: string) {
+        this.saveSession(address);
+        try {
+            const count = await this.web3.eth.getTransactionCount(this.defaultAccount);
+            const nonce = this.web3.utils.toHex(count);
+            const txValue = this.web3.utils.toHex(1);
 
-    // public async placeBet(index: number, amount: number) {
-    //     try {
-    //         console.log(`placeBet: ${this.defaultAccount}, ${index}, ${amount}, ${this.contract}`);
-    //         const data = await this.contract.methods.placeBet(index, amount).encodeABI();
-    //         const tx = this.signTransaction(data);
-    //         return tx;
-    //     } catch (error) {
-    //         console.error('placeBet - error', error);
-    //         return error;
-    //     }
-    // }
+            const from = this.web3.utils.toChecksumAddress(this.defaultAccount);
+            const to = this.web3.utils.toChecksumAddress(address);
 
-    // public async playerReadyToRace() {
-    //     try {
-    //         console.log(`playerReadyToRace`);
-    //         const data = await this.contract.methods.playerReadyToRace().encodeABI();
-    //         const tx = this.signTransaction(data);
-    //         return tx;
-    //     } catch (error) {
-    //         console.error('playerReadyToRace - error', error);
-    //         return error;
-    //     }
-    // }
+            // chainId: '0x03'
+            const rawTx = {
+                nonce: nonce,
+                from: from,
+                to: to,
+                value: '0x0',
+                gasLimit: '0x0',
+                gasPrice: '0x0',
+                data: this.contract.methods.transfer(to, txValue).encodeABI()
+            };
+
+            const privateKey = Buffer.from(this.accounts[0].privateKey.replace('0x', ''), 'hex');
+            const tx = new ethereumjs(rawTx);
+            tx.sign(privateKey);
+            const serializedTx = tx.serialize();
+
+            const receipt = await this.web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'));
+            console.log(`Receipt info:  ${JSON.stringify(receipt, null, '\t')}`);
+            console.log(`From\'s balance after transfer: ${await this.contract.methods.balanceOf(from).call()}`);
+            console.log(`To\'s balance after transfer: ${await this.contract.methods.balanceOf(to).call()}`);
+        } catch (err) {
+            console.log(err);
+        }
+    }
 }

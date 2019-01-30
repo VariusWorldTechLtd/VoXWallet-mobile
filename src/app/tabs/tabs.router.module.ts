@@ -12,7 +12,7 @@ const routes: Routes = [
         children: [
           {
             path: '',
-            loadChildren: '../activity/activity.module#ActivityPageModule'
+            loadChildren: '../pages/activity/activity.module#ActivityPageModule'
           }
         ]
       },
@@ -21,7 +21,7 @@ const routes: Routes = [
         children: [
           {
             path: '',
-            loadChildren: '../deposit/deposit.module#DepositPageModule'
+            loadChildren: '../pages/deposit/deposit.module#DepositPageModule'
           }
         ]
       },
@@ -30,7 +30,7 @@ const routes: Routes = [
         children: [
           {
             path: '',
-            loadChildren: '../transfer/transfer.module#TransferPageModule'
+            loadChildren: '../pages/transfer/transfer.module#TransferPageModule'
           }
         ]
       },
@@ -39,7 +39,7 @@ const routes: Routes = [
         children: [
           {
             path: '',
-            loadChildren: '../withdraw/withdraw.module#WithdrawPageModule'
+            loadChildren: '../pages/withdraw/withdraw.module#WithdrawPageModule'
           }
         ]
       },
