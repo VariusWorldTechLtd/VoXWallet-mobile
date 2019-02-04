@@ -10,7 +10,7 @@ declare var require: any;
 declare var Buffer: any;
 
 const contractAbi = require('./ABI.json');
-const contractAddress = '';
+const contractAddress = '0x92fCc43e8FEda3CF74BF2A1A70fC456008Bd5b3C';
 
 // RXJS
 import { Observable, Subject, pipe, bindNodeCallback, of } from 'rxjs';
@@ -51,9 +51,11 @@ export class Web3Service {
 
         console.log(`web3: ${web3}`);
 
-        this.accounts[0] = web3.eth.accounts.create('V&6f94&z741v8T9PB9!45]oF62N91T7M');
+        // this.accounts[0] = web3.eth.accounts.create('V&6f94&z741v8T9PB9!45]oF62N91T7M');
+
+        this.accounts[0] = web3.eth.accounts.privateKeyToAccount(`0x46ccc12221c45005dad2d5942a6d037589d95191bd7b4cb7bf68af39b0cc808d`);
         console.log(`acc: ${JSON.stringify(this.accounts[0])}`);
-        this.defaultAccount = this.accounts[0].address;
+        this.defaultAccount = this.web3.utils.toChecksumAddress(this.accounts[0].address);
 
         if (this.defaultAccount) {
             this.state = STATE_CONNECTED;
@@ -86,15 +88,16 @@ export class Web3Service {
             console.log(`Ethereum - getNet`);
             const id = await this.web3.eth.net.getId();
             console.log(`Ethereum - id: ${id}`);
-            if (id && id === 4) {
+            if (id && id === 827487) {
                 // Contract
-                this.contract = new this.web3.eth.Contract(contractAbi, contractAddress);
-                console.log(`Ethereum - contract: ${this.contract}`);
+                // this.contract = new this.web3.eth.Contract(contractAbi, contractAddress);
+                // console.log(`Ethereum - contract: ${this.contract}`);
 
                 console.log('Watching accounts...');
-                setInterval(() => this.refreshAccounts(), 1000);
+                // setInterval(() => this.refreshAccounts(), 1000);
+                this.accountsObservable.next(this.state);
             } else {
-                this.state = 'SWITCH TO RINKEBY';
+                this.state = 'SWITCH TO VOX NETWORK';
             }
         } else {
             this.accountsObservable.next(this.state);
@@ -163,13 +166,13 @@ export class Web3Service {
         try {
             const count = await this.web3.eth.getTransactionCount(this.defaultAccount);
             const nonce = this.web3.utils.toHex(count);
-            const txValue = this.web3.utils.toHex(1);
+            const txValue = this.web3.utils.toHex(0.001);
 
             const from = this.web3.utils.toChecksumAddress(this.defaultAccount);
             const to = this.web3.utils.toChecksumAddress(address);
 
-            // chainId: '0x03'
             const rawTx = {
+                // chainId: this.web3.utils.toHex('827487'),
                 nonce: nonce,
                 from: from,
                 to: to,
@@ -190,6 +193,39 @@ export class Web3Service {
             console.log(`To\'s balance after transfer: ${await this.contract.methods.balanceOf(to).call()}`);
         } catch (err) {
             console.log(err);
+        }
+    }
+
+    private async signTransaction(data: any) {
+        const nonce = await this.web3.eth.getTransactionCount(this.defaultAccount);
+        const rawTx = {
+            // chainId: this.web3.utils.toHex('827487'),
+            nonce: nonce || this.web3.utils.toHex(0),
+            gasPrice: '0x0',
+            gasLimit: '0x0',
+            to: contractAddress,
+            value: '0x0',
+            data: data
+        };
+        const tx = new ethereumjs(rawTx);
+        tx.sign(Buffer.from(this.accounts[0].privateKey.replace('0x', ''), 'hex'));
+
+        const raw = '0x' + tx.serialize().toString('hex');
+        const transactionHash = await this.web3.eth.sendSignedTransaction(raw);
+        return transactionHash;
+    }
+
+    public async getLoginTokensBalance() {
+        try {
+            console.log(`getLoginTokensBalance: ${this.defaultAccount}, ${this.contract}`);
+            // const data = await this.contract.methods.balanceOf(this.defaultAccount).encodeABI();
+            // const tx = await this.signTransaction(data);
+            const result = await this.contract.methods.balanceOf(this.defaultAccount).call();
+            const balance = this.web3.utils.fromWei(result, 'ether');
+            return balance;
+        } catch (error) {
+            console.error('getLoginTokensBalance - error', error);
+            return error;
         }
     }
 }

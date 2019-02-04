@@ -21,13 +21,28 @@
 <ion-content no-scroll>
 
   <ion-card>
-    <ion-item href="#" lines="none">
-      <ion-avatar slot="start">
+    <ion-item (click)="onGetLoginTokens();" [disabled]="loading" lines="none">
+      <!-- <ion-avatar slot="start">
         <img src="https://s2.coinmarketcap.com/static/img/coins/64x64/1765.png">
-      </ion-avatar>
+      </ion-avatar> -->
+      <!-- <ion-icon name="wallet" slot="start"></ion-icon> -->
       <ion-label>
-        <h2>LOGIN TOKENS</h2>
-        <p>You have 0 login tokens.</p>
+        <h2>1. CLICK TO GET LOGIN TOKENS</h2>
+      </ion-label>
+    </ion-item>
+  </ion-card>
+  <ion-card>
+    <ion-item (click)="onBalanceLoginTokens();" [disabled]="loading" lines="none">
+      <ion-label>
+        <h2>2. CHECK LOGIN TOKENS BALANCE</h2>
+        <p>You have {{ loginTokensBalance }} login tokens.</p>
+      </ion-label>
+    </ion-item>
+  </ion-card>
+  <ion-card>
+    <ion-item [disabled]="loading" lines="none">
+      <ion-label>
+        <h2>3. CLICK SCAN QR CODE BELOW</h2>
       </ion-label>
     </ion-item>
   </ion-card>
@@ -44,5 +59,5 @@
     </ion-item>
   </ion-card> -->
 
-  
+
 </ion-content>
